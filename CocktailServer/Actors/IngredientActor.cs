@@ -12,27 +12,32 @@ namespace CoctailServer.Actors
             _cache = cache;
             _wordCloudActor = wordCloudActor;
 
-            Receive<CocktailFound>(message =>
+            Receive<ReplaceCocktailsForLetter>(message =>
             {
-                _cache.AddCocktail(
-                    message.Letter,
-                    message.CocktailName,
-                    message.Ingredients
-                );
-            });
+                Log.Info($"IngredientActor primio {message.Cocktails.Count} koktela za '{message.Letter}'.");
 
-            Receive<IngredientFound>(message =>
-            {
-                var entry = _cache.AddOrUpdate(message.Letter, message.Ingredient);
-                var current = _cache.Get(message.Letter);
+                var entry = _cache.ReplaceCocktails(
+                    message.Letter,
+                    message.Cocktails
+                );
+
+                Log.Info($"WordCloud se azurira za '{message.Letter}'.");
 
                 _wordCloudActor.Tell(new UpdateWordCloud(
                     entry.Letter,
                     new Dictionary<string, int>(entry.Frequencies),
-                    current?.Cocktails ?? new List<CocktailInfo>(),
+                    new List<CocktailInfo>(entry.Cocktails),
                     entry.LastUpdated,
                     entry.ExpiresAt
                 ));
+
+                Sender.Tell(new ReplaceCompleted(entry.Letter));
+            });
+            Receive<CheckExpiration>(message =>
+            {
+                bool expired = _cache.IsExpired(message.Letter);
+
+                Sender.Tell(new ExpirationResult(expired));
             });
         }
     }

@@ -24,4 +24,11 @@ namespace CoctailServer
         string Message
     );
     public record CocktailFound(string Letter, string CocktailName, List<string> Ingredients);
+    public record ReplaceCocktailsForLetter(
+    string Letter,
+    List<CocktailInfo> Cocktails
+    );
+    public record ReplaceCompleted(string Letter);
+    public record CheckExpiration(string Letter);
+    public record ExpirationResult(bool IsExpired);
 }

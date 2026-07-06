@@ -10,7 +10,7 @@ namespace CoctailServer.Actors
         {
             Receive<UpdateWordCloud>(message =>
             {
-                bool isExpired = DateTime.Now > message.ExpiresAt;
+                Log.Info($"WordCloudActor primio UpdateWordCloud za '{message.Letter}'.");
 
                 _wordClouds[message.Letter] = new WordCloudResponse(
                     message.Letter,
@@ -18,7 +18,7 @@ namespace CoctailServer.Actors
                     message.Cocktails,
                     message.LastUpdated,
                     message.ExpiresAt,
-                    isExpired,
+                    DateTime.Now > message.ExpiresAt,
                     "Podaci su uspešno ažurirani."
                 );
             });
@@ -38,7 +38,6 @@ namespace CoctailServer.Actors
                         true,
                         "Za traženo slovo trenutno nema podataka."
                     ));
-
                     return;
                 }
 

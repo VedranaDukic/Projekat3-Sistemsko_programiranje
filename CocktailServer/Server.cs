@@ -17,7 +17,6 @@ namespace CoctailServer
             _wordCloudActor = wordCloudActor;
             _rxWorker = rxWorker;
         }
-
         public async Task StartAsync()
         {
             _listener.Start();
@@ -34,6 +33,11 @@ namespace CoctailServer
         {
             try
             {
+                if (context.Request.RawUrl == "/favicon.ico")
+                {
+                    await SendResponse(context, "", 204);
+                    return;
+                }
                 string? letter = context.Request.QueryString["letter"];
 
                 Log.Info($"Primljen zahtev: {context.Request.RawUrl}");
@@ -46,13 +50,14 @@ namespace CoctailServer
 
                 letter = Helper.NormalizeLetter(letter);
 
-                await _rxWorker.ProcessLetterAsync(letter);
-                await Task.Delay(300);
+                await _rxWorker.TrackLetterAsync(letter); //server ne poziva api nego prosledjuje workeru
+
+
 
                 var response = await _wordCloudActor.Ask<WordCloudResponse>(
                     new GetWordCloud(letter),
                     TimeSpan.FromSeconds(5)
-                );
+                ); //server pita aktora za rezultat
 
                 string html = Helper.GenerateHtml(letter, response);
 

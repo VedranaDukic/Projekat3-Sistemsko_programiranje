@@ -23,7 +23,14 @@ var ingredientActor = actorSystem.ActorOf(
 
 var cocktailService = new CocktailService();
 
-var rxWorker = new RxWorker(cocktailService, ingredientActor);
+var rxWorker =
+    new RxWorker(
+        cocktailService,
+        ingredientActor,
+        wordCloudActor
+    );
+
+rxWorker.StartPeriodicProcessing();
 
 var server = new Server("http://localhost:8080/", wordCloudActor, rxWorker);
 
